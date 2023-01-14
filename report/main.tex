@@ -38,41 +38,41 @@ email@studenti.polito.it, email@studenti.polito.it}
 
 \begin{abstract}
     In this report, a machine learning model for intent recognition is proposed.
-    The model is able to recognize certain key words from wav audio files by using Mel-frequency cepstral coefficients (MFCCs) as features, Principal Component Analysis (PCA) to reduce their number, and a k-nearest neighbors (KNN) as classifier.
+    The model is able to recognize key words from wav audio files by using Mel-frequency cepstral coefficients (MFCCs) as features, Principal Component Analysis (PCA) to reduce features number, and K-Nearest Neighbors (KNN) algorithm as a classifier.
     It achieves an accuracy of 0.762 on the public leaderboard, showing potential for future improvements.
 \end{abstract}
 
 \section{Problem overview}
 Intent recognition is an important task in natural language processing (NLP) and speech recognition.
-Its goal is to determine the intention or meaning behind a piece speech.
-This is a challenging task because the audio files contain little background noise, different accents, and variations in speaking style.
-Additionally, audio data is not as easy to work with as text data, as it requires specialized preprocessing techniques to extract useful features.
+Its goal is to determine the underlying purpose of a part of speech.
+This is a challenging task because the audio files contain little background noise and people speaking with different accents and variations in speaking style.
+Additionally, audio data are not easy to work with as they require specialized preprocessing techniques in order to extract useful features.
 
 The dataset given has been divided in two parts:
 \begin{itemize}
     \item \textbf{Development} set, containing 9954 instances, 7 predictive attributes and the target, \textit{intent}.
     \item \textbf{Evaluation} set, containing 1455 instances with the same structure besides the target variable.
 \end{itemize}
-The split has been made in order to train a model in the first one, and evaluate its accuracy in the second.
+The split has been made in order to train a model using the first one, and evaluate its accuracy using the second one.
 
-Each row of the dataset contains information about the person speaking, from his/her \textit{speakerId}, to his/her \textit{gender}, \textit{ageRange}, \textit{self-reported fluency level}, \textit{first Language spoken}, the \textit{current language used for work/school}, and the \textit{path} to the wav file.
-The \textit{intent} refers to the purpose of the speaker and it is a categorical response variable taking values in 7 possible classes, some of which are "activate music", "increase heat" and "deactivate lights".
+Each row of the dataset contains information about the person speaking, from his/her \textit{speakerId}, to his/her \textit{gender}, \textit{ageRange}, \textit{self-reported fluency level}, \textit{first Language spoken} and the \textit{current language used for work/school}, and the \textit{path} to the wav file.
+The \textit{intent} refers to the purpose of the speaker and it is a categorical response variable assuming 7 possible values, some of which are "activate music", "increase heat" and "deactivate lights".
 
-From a breaf exploratory data analysis, it is immediate to observe that there are no missing or duplicated values. 
-Then it can be noted that 10834 out of the total 11309 speakers are native english (United States).
-Thus, they account for nearly 96\% of the datas, making the remaing speaker negligibile and not numerically significant.
-Therefore, we could cut off the 3 attributes regarding languages or consider the non native speaker as outliers and exclude them from the development set, focusing our attention to the recognition of the native ones intent.
-Both ways have been tested, bringing no significant difference in the results, so we will procede with the first one.
+From a brief exploratory data analysis, it is immediate to observe that there are no missing or duplicated values. 
+Then it can be noted that 10834 out of the total 11309 speakers are native english (from United States).
+Thus, they account for nearly 96\% of the data, making the remaining speakers negligible and not numerically significant.
+Therefore, we could cut off the 3 attributes regarding languages or alternatively consider the non native speakers as outliers and exclude them from the development set, focusing our attention to the recognition of the native ones intents.
+Both options have been tested, bringing no significant difference in the results, so we will proceed with the first one.
 
-On the other hand, \textit{gender} and \textit{ageRange} will be kept since speaker in the same bucket could have similar tone colour, making the recognition easier.
+On the other hand, \textit{gender} and \textit{ageRange} will be kept since speakers in the same bucket could have similar tone colour, making the recognition easier.
 
-Concerning the wav audio files, they have been sampled at the same rate, 22050 Hz, which is a standard value for speech recording where perceived quality is unimportant, but clarity must be maintained, providing a good trade-off between quality and memory load.
-Anyway, the lengths of the audio are different, having a mean duration of about 2.6 seconds.
-In order to extract an equal number of features from each recording, it will be necessary to properly adjust each one. 
+For what concerns the wav audio files, they have been sampled at the same rate, 22050 Hz, which is a standard value for speech recording when perceived quality is unimportant, but clarity must be maintained, providing a good trade-off between quality and memory load.
+Moreover, the audio lengths are different, having a mean duration of about 2.6 seconds.
+In order to extract an equal number of features from each recording, it will be necessary to properly adjust each one of them. 
 
-Listening to some audios, it is interesting to note that the intent it is not exactly equal to what the person say.
+Listening to some audios, it is interesting to note that the intent does not exactly coincide with the person statement.
 For instance, the speaker could say "volume up" instead of "increase volume".
-This increases the complexity of the problem because there is not temporal overlap between speakers belonging to the same class.
+This increases the complexity of the problem because there is not temporal overlapping between speakers belonging to the same class.
 
 \section{Proposed approach}
 % The proposed approach for this task is to use Mel-frequency cepstral coefficients (MFCCs) as features, and Principal Component Analysis (PCA) to reduce the dimensionality.
@@ -83,19 +83,19 @@ This increases the complexity of the problem because there is not temporal overl
 % It works by comparing a given input to the k nearest examples in the training set, where k is a user-defined parameter.
 \subsection{Preprocessing}
 
-Firstly, the categorical features \textit{gender} and \textit{ageRange} have been one-hot-encoded (adding up to respectively 2 and 3 features) while the remaining \textit{speakerId} has been discarded because it had 97 unique values.
+Firstly, the categorical features \textit{gender} and \textit{ageRange} have been one-hot-encoded (adding up respectively 2 and 3 features) while \textit{speakerId} has been discarded because it had 97 unique values.
 Therefore, its encoding would have ramp the number of features up by 96, increasing the computational cost and time efficiency without actually improving the accuracy.
 
 Moving our focus towards the audio files, they were preprocessed by trimming, cutting, and padding.
-The first step involved removing any trailing and leading silences or background noises, making it possible to cut the mean duration to about 1.8 seconds without any loss of relevant information.
+The first step involved removing any trailing and leading silences or background noises, making possible to cut the mean duration to about 1.8 seconds without any loss of relevant information.
 Next, the audio files were cut and padded.
-This was done to ensure that the features extracted would be comparable and of the same length, because in scikit-learn the data have to be consistent.
-Going into the details, it has been take the 95th percentile $p$ of the lentghs, indicating the point where 95\% of the data have values less than $p$.
+This has been done to ensure that the features extracted are comparable and of the same length, obtaining as a result consistent data for scikit-learn.
+Going into detail, the 95th percentile $p$ of the lengths has been taken, indicating the length such that 95\% of data are shorter than $p$.
 We got $p = 2.9$ seconds.
-The cut and pad method refers, respectively, to the discard of the part of recording over $p$ and to the addition of trailing zeros (which represent silence) to the recording with lenght less than $p$.
+The cut and pad method refers, respectively, to the discard of the recording part over $p$ and to the addition of trailing zeros (which represent silence) to recording with length less than $p$.
 
 The next step was to compute the Mel-frequency cepstral coefficients (MFCCs).
-MFCCs are typically the “de facto” standard for speech recognition because of their high accuracy and low complexity.
+MFCCs are the “de facto” standard for speech recognition because of their high accuracy and low complexity.
 However, they are not very robust at the presence of noise.
 Therefore, it is common to normalise their values to lessen their influence, and so we did.
 The term ceptral refers to the cepstrum, which is a tool to investigate periodic structures in frequency spectra.
