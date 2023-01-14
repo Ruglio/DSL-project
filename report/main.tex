@@ -133,36 +133,65 @@ The following two models have been deepened because researches have proved their
     \item The support vector machine (SVM) is a very versatile model whose basic idea is to find the best linear decision surface, that separates different classes.
     Their importance is due to the kernel trick, which vartually transforms the data in a higher dimensional space, where it is linearly separable, obtaining a non-linear decision boundary in the original feature space.
     For speech recognition models, SVMs are often used with a radial basis function (RBF) kernel.
+    Moreover, with have trained SVM with a one vs one approach consisting in fitting one classifier per class pair.
+    At prediction time, the class which receives the most votes is selected.
+    Thus
 \end{itemize}
 
 \subsection{Hyperparameters tuning}
-In this section is reported the tuning of the previous models using a grid-search 5-fold cross validation.
+In this section is reported the tuning of the previous models' hyperparameters using a grid search 5-fold cross-validation method.
+It involves training the model multiple times with different combinations of hyperparameters, and evaluating the performance of each combination using cross-validation.
+In our case, the performance score of interest is the accuracy.
+The possible parameters' values can be seen in table \ref{tab:grid}.
 
-\begin{table}[h]
+\begin{table}
     \centering
-    \caption{Caption above table.}
+    \caption{parameters grid}
     \begin{tabular}{lllll}
         \toprule
-        \multirow{2}{*}[-1em]{Models} & \multicolumn{3}{c}{Metric 1} & Metric 2\\
-        \addlinespace[10pt]
-        \cmidrule(lr){2-4} \cmidrule(lr){5-5} \\
-        {} & precision & recall & F-score  & R@10 \\
+        \toprule
+        Models & Parameters & Values\\
         \midrule
-        model 1 & 0.67  & 0.8 & 0.729  & 0.75 \\
-        model 2 & 0.8 & 0.9 & 0.847 & 0.85 \\
+        \addlinespace[5pt]
+        \multirow{2}{*}[-3pt]{SVM}  & kernel & ['linear', 'poly', 'rbf']\\
+                                    \cmidrule{2-3}
+                                    & C      & [0.1, 1, 10]\\
+        \midrule
+        \multirow{2}{*}[-3pt]{KNN}  & n neighbors & [5, 6, 7, 8, 9, 10]\\
+                                    \cmidrule{2-3}
+                                    & weights     & ['uniform', 'distance']\\
         \bottomrule
     \end{tabular}
     \label{tab:grid}
 \end{table}
 
-% The distance metric and number of neighbors were used as hyperparameters for the KNN algorithm.
-% These hyperparameters were tuned using a combination of grid search and cross-validation to optimize the performance of the model.
-% Grid search is a method of systematically searching through a range of hyperparameter values to find the best combination.
-% Cross-validation is a method of evaluating the model by dividing the data into training and testing sets and measuring the performance of the model on the test set.
-% This approach allows for a more accurate evaluation of the model and helps to prevent overfitting.
-% The optimal hyperparameter values were found to be a distance metric of Euclidean distance and a number of neighbors of 5.
+In general $k$-fold cross-validation is a method of evaluating the performance by dividing the development data into training and validation sets, with size respectively $(k-1)/k$ and $1/k$.
+This process is repeated $k$ times with different partitions of the data, and the average performance is used to evaluate the model.
+Therefore, $k$ training and testing processes have to be made which could be computationally expensive for slow models.
 
 \section{Results}
+
+\begin{table}
+    \centering
+    \caption{results on public leaderboard}
+    \begin{tabular}{lllll}
+        \toprule
+        \toprule
+        Models & Accuracy & Best parameters\\
+        \midrule
+        \addlinespace[5pt]
+        \multirow{2}{*}[-3pt]{SVM} & \multirow{2}{*}[-3pt]{0.728}   & kernel: 'rbf'\\
+                                                                    \cmidrule{3-3}
+                                                                    && C: 10\\
+        \midrule
+        \multirow{2}{*}[-3pt]{KNN} & \multirow{2}{*}[-3pt]{0.762}   & n neighbors: 6\\
+                                                                    \cmidrule{3-3}
+                                                                    && weights: 'distance'\\
+        \bottomrule
+    \end{tabular}
+    \label{tab:results}
+\end{table}
+
 The KNN algorithm with optimized hyperparameters achieved an accuracy of 0.762.
 This result was compared with a support vector classifier (SVC) and a random forest (RF) model built as comparisons.
 The SVC model achieved an accuracy of 0.750, and the RF model achieved an accuracy of 0.780.
