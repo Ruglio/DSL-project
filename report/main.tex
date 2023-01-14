@@ -14,8 +14,11 @@
 \usepackage{textcomp}
 \usepackage{xcolor}
 
-
+\usepackage{graphicx}
 \graphicspath{ {./figures/} }
+
+\usepackage{tabularx,ragged2e,booktabs,caption}
+\usepackage{multirow}
 
 
 \begin{document}
@@ -31,29 +34,147 @@ email@studenti.polito.it, email@studenti.polito.it}
 \maketitle
 
 \begin{abstract}
-In this project, we aim to build a classification pipeline in Python using Scikit-learn to predict the intent expressed in audio recordings in the form of WAV files. The pipeline includes steps such as preprocessing the data, model selection, hyperparameter tuning, and evaluating the performance of the model on the test set. We found that using a support vector machine (SVM) with a linear kernel and a regularization parameter of 1 resulted in the best performance, with an accuracy of 89\% on the test set.
+    In this report, a machine learning model for intent recognition is proposed.
+    The model is able to recognize certain key words from wav audio files by using Mel-frequency cepstral coefficients (MFCCs) as features, Principal Component Analysis (PCA) to reduce their number, and a k-nearest neighbors (KNN) as classifier.
+    It achieves an accuracy of 0.762 on the public leaderboard, showing potential for future improvements.
 \end{abstract}
 
+% \begin{figure}
+%     \centering
+%     \includegraphics{m}
+%     \caption{graph}
+% \end{figure}
+
+% \begin{figure}
+%     \begin{subfigure}{.5\textwidth}
+%         \input{figures/wave.pgf}
+%         \caption{Subplot 1}
+%     \end{subfigure}
+%     \begin{subfigure}{.5\textwidth}
+%         \input{figures/mfcc.pgf}
+%         \caption{Subplot 2}
+%     \end{subfigure}
+% \end{figure}
+
 \section{Problem overview}
-The goal of this project is to classify the intent expressed in audio recordings, given in the form of WAV files. This is a supervised learning problem, as we have a labeled dataset of audio recordings with their corresponding intents.
+Intent recognition is an important task in natural language processing (NLP) and speech recognition.
+Its goal is to determine the intention or meaning behind a piece speech.
+This is a challenging task because the audio files contain little background noise, different accents, and variations in speaking style.
+Additionally, audio data is not as easy to work with as text data, as it requires specialized preprocessing techniques to extract useful features.
+
+The dataset given has been divided in two parts:
+\begin{itemize}
+    \item \textbf{Development} set, containing 9954 instances, 7 predictive attributes and the target, \textit{intent}.
+    \item \textbf{Evaluation} set, containing 1455 instances with the same structure besides the target variable.
+\end{itemize}
+The split has been made in order to train a model in the first one, and evaluate its accuracy in the second.
+
+Each row of the dataset contains information about the person speaking, from his/her \textit{speakerId}, to his/her \textit{gender}, \textit{ageRange}, \textit{self-reported fluency level}, \textit{first Language spoken}, the \textit{current language used for work/school}, and the \textit{path} to the wav file.
+The \textit{intent} refers to the purpose of the speaker and it is a categorical response variable taking values in 7 possible classes, some of which are "activate music", "increase heat" and "deactivate lights".
+
+From a breaf exploratory data analysis, it is immediate to observe that there are no missing or duplicated values. 
+Then it can be noted that 10834 out of the total 11309 speakers are native english (United States).
+Thus, they account for nearly 96\% of the datas, making the remaing speaker negligibile and not numerically significant.
+Therefore, we could cut off the 3 attributes regarding languages or consider the non native speaker as outliers and exclude them from the development set, focusing our attention to the recognition of the native ones intent.
+Both ways have been tested, bringing no significant difference in the results, so we will procede with the first one.
+
+On the other hand, \textit{gender} and \textit{ageRange} will be kept since speaker in the same bucket could have similar tone colour, making the recognition easier.
+
+Concerning the wav audio files, they have been sampled at the same rate, 22050 Hz, which is a standard value for speech recording where perceived quality is unimportant, but clarity must be maintained, providing a good trade-off between quality and memory load.
+Anyway, the lengths of the audio are different, having a mean duration of about 2.6 seconds.
+In order to extract an equal number of features from each recording, it will be necessary to properly adjust each one. 
+
+Listening to some audios, it is interesting to note that the intent it is not exactly equal to what the person say.
+For instance, the speaker could say "volume up" instead of "increase volume".
+This increases the complexity of the problem because there is not temporal overlap between speakers belonging to the same class.
 
 \section{Proposed approach}
-To solve this problem, we followed the standard steps of a machine learning project: preprocessing the data, selecting a model, tuning the hyperparameters, and evaluating the performance of the model on the test set. We used the Scikit-learn library for preprocessing and model selection, and we extracted features from the audio files using MFCCs.
-
+% The proposed approach for this task is to use Mel-frequency cepstral coefficients (MFCCs) as features, and Principal Component Analysis (PCA) to reduce the dimensionality.
+% MFCCs are commonly used in speech recognition because they are a compact representation of the spectral envelope of the audio signal.
+% They capture the unique characteristics of a speaker's voice and are robust to background noise.
+% PCA is a technique used for feature extraction and dimensionality reduction, which can improve the computational efficiency of the model.
+% The KNN algorithm is a simple, yet effective, classifier that can be useful for recognizing patterns in data.
+% It works by comparing a given input to the k nearest examples in the training set, where k is a user-defined parameter.
 \subsection{Preprocessing}
-Before we could start building the model, we needed to preprocess the data. This included converting the WAV files to a numerical representation using MFCCs and standardizing the features. We also split the data into training, validation, and test sets.
+
+Firstly, the categorical features \textit{gender} and \textit{ageRange} have been one-hot-encoded (adding up to respectively 2 and 3 features) while the remaining \textit{speakerId} has been discarded because it had 97 unique values.
+Therefore, its encoding would have ramp the number of features up by 96, increasing the computational cost and time efficiency without actually improving the accuracy.
+
+Moving our focus towards the audio files, they were preprocessed by trimming, cutting, and padding.
+The first step involved removing any trailing and leading silences or background noises, making it possible to cut the mean duration to about 1.8 seconds without any loss of relevant information.
+Next, the audio files were cut and padded.
+This was done to ensure that the features extracted would be comparable and of the same length, because in scikit-learn the data have to be consistent.
+Going into the details, it has been take the 95th percentile $p$ of the lentghs, indicating the point where 95\% of the data have values less than $p$.
+We got $p = 2.9$ seconds.
+The cut and pad method refers, respectively, to the discard of the part of recording over $p$ and to the addition of trailing zeros (which represent silence) to the recording with lenght less than $p$.
+
+The next step was to compute the Mel-frequency cepstral coefficients (MFCCs).
+MFCCs are typically the “de facto” standard for speech recognition because of their high accuracy and low complexity.
+However, they are not very robust at the presence of noise.
+Therefore, it is common to normalise their values to lessen their influence, and so we did.
+The term ceptral refers to the cepstrum, which is a tool to investigate periodic structures in frequency spectra.
+Instead, Mel-frequency indicates that the frequency studied are equally spaced on the mel scale, which is a non-linear scale that is based on the way the human ear perceives different frequencies of sound.
+
+At the end, Principal Component Analysis (PCA) was used to reduce the number of features.
+In fact, the MFCC built from each recording is represented by a $125 \times 12$ matrix, prducing the overwhelming 1500 features plus the 5 from \textit{gender} and \textit{ageRange}.
+PCA is a technique used for feature extraction and dimensionality reduction, which can improve the computational efficiency of the model.
+It works by transforming the original features into a new set of features, called principal components, which are linear combinations of the original ones.
+These principal components are chosen such that they capture the most important information in the original features, explaining the most variance possible.
+In our case, narrow the features down to 272 still explaining the 90\% of the variance in the development set.
 
 \subsection{Model selection}
-Once the data was preprocessed, we compared the performance of different models using cross-validation on the training set. We tried several models, including a support vector machine (SVM), a random forest, and a gradient boosting classifier.
+The following two models have been deepened because researches have proved their efficiency for speech recognition systems:
+\begin{itemize}
+    \item The K-nearest neighbors (KNN) algorithm is a simple, yet effective, classifier that can be useful for recognizing patterns in data.
+    It is a non-parametric method, which means it does not make any assumptions about the underlying data distribution.
+    This makes it well-suited for a problem like intent recognition where the data may be very complex.
+    Additionally, KNN algorithm is computationally efficient and easy to implement.
+
+    \item The support vector machine (SVM) is a very versatile model whose basic idea is to find the best linear decision surface, that separates different classes.
+    Their importance is due to the kernel trick, which vartually transforms the data in a higher dimensional space, where it is linearly separable, obtaining a non-linear decision boundary in the original feature space.
+    For speech recognition models, SVMs are often used with a radial basis function (RBF) kernel.
+\end{itemize}
 
 \subsection{Hyperparameters tuning}
-Once we had selected a model, we tuned the hyperparameters to optimize the performance of the model on the test set. We used grid search with cross-validation to find the optimal set of hyperparameters for the SVM model.
+In this section is reported the tuning of the previous models using a grid-search 5-fold cross validation.
+
+\begin{table}[h]
+    \centering
+    \caption{Caption above table.}
+    \begin{tabular}{lllll}
+        \toprule
+        \multirow{2}{*}[-1em]{Models} & \multicolumn{3}{c}{Metric 1} & Metric 2\\
+        \addlinespace[10pt]
+        \cmidrule(lr){2-4} \cmidrule(lr){5-5} \\
+        {} & precision & recall & F-score  & R@10 \\
+        \midrule
+        model 1 & 0.67  & 0.8 & 0.729  & 0.75 \\
+        model 2 & 0.8 & 0.9 & 0.847 & 0.85 \\
+        \bottomrule
+    \end{tabular}
+    \label{tab:grid}
+\end{table}
+
+% The distance metric and number of neighbors were used as hyperparameters for the KNN algorithm.
+% These hyperparameters were tuned using a combination of grid search and cross-validation to optimize the performance of the model.
+% Grid search is a method of systematically searching through a range of hyperparameter values to find the best combination.
+% Cross-validation is a method of evaluating the model by dividing the data into training and testing sets and measuring the performance of the model on the test set.
+% This approach allows for a more accurate evaluation of the model and helps to prevent overfitting.
+% The optimal hyperparameter values were found to be a distance metric of Euclidean distance and a number of neighbors of 5.
 
 \section{Results}
-After we had trained and tuned the model, we evaluated its performance on the test set. The SVM model with a linear kernel and a regularization parameter of 1 achieved the best results, with an accuracy of 89\%.
+The KNN algorithm with optimized hyperparameters achieved an accuracy of 0.762.
+This result was compared with a support vector classifier (SVC) and a random forest (RF) model built as comparisons.
+The SVC model achieved an accuracy of 0.750, and the RF model achieved an accuracy of 0.780.
+The results show that the proposed approach of using MFCCs, PCA and a KNN algorithm as the classifier can effectively recognize certain words from wav audio files.
 
 \section{Discussion}
-The SVM model performed the best among the models we tried, but there is still room for improvement. In future work, we plan to try other feature extraction techniques and model architectures to see if we can further improve the performance of the classification pipeline.
+The results demonstrate the potential of using MFCCs, PCA and KNN algorithm for intent recognition task.
+The preprocessing steps and hyperparameter tuning were crucial for achieving good performance.
+The results were compared with SVC and RF models, which can be used as benchmarks for future work.
+The results also indicate that there is room for improvement and further research could be done to improve the performance of the model.
+For example, other feature extraction techniques or classifiers could be explored, and the model could be trained on a larger dataset to increase its generalizability.
+Additionally, incorporating techniques like data augmentation and ensembling could help to further improve the performance.
 
 \nocite{*}
 \bibliography{bibliography}
