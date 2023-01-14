@@ -17,9 +17,12 @@
 \usepackage{graphicx}
 \graphicspath{ {./figures/} }
 
-\usepackage{tabularx,ragged2e,booktabs,caption}
+\usepackage{booktabs}
+\usepackage{caption}
 \usepackage{multirow}
 
+\usepackage{svg}
+\svgpath{figures/}
 
 \begin{document}
 
@@ -38,23 +41,6 @@ email@studenti.polito.it, email@studenti.polito.it}
     The model is able to recognize key words from wav audio files by using Mel-frequency cepstral coefficients (MFCCs) as features, Principal Component Analysis (PCA) to reduce features number, and K-Nearest Neighbors (KNN) algorithm as a classifier.
     It achieves an accuracy of 0.762 on the public leaderboard, showing potential for future improvements.
 \end{abstract}
-
-% \begin{figure}
-%     \centering
-%     \includegraphics{m}
-%     \caption{graph}
-% \end{figure}
-
-% \begin{figure}
-%     \begin{subfigure}{.5\textwidth}
-%         \input{figures/wave.pgf}
-%         \caption{Subplot 1}
-%     \end{subfigure}
-%     \begin{subfigure}{.5\textwidth}
-%         \input{figures/mfcc.pgf}
-%         \caption{Subplot 2}
-%     \end{subfigure}
-% \end{figure}
 
 \section{Problem overview}
 Intent recognition is an important task in natural language processing (NLP) and speech recognition.
