@@ -213,8 +213,8 @@ For testing purpose k-fold cross validation on the development set has been used
 \end{table}
 
 The results show little difference in accuracy, with KNN algorithm performing slightly better.\\
-Subsequently, we have validated our KNN algorithm with the best hyperparameters configuration found, changing features quality.
-We have tested 5 different values for the MFCCs number hyperparameter: 8, 10, 12, 16 and the default value 20. The optimal number found has been 10, with accuracy displayed in figure \ref{fig:acc}.\\
+Subsequently, we have validated our KNN and SVM algorithms with the best hyperparameters configurations found, changing features quality.
+We have tested 5 different values for the MFCCs number hyperparameter: 8, 10, 12, 16, 18 and the default value 20. The optimal number found has been 10 in both cases, with accuracy displayed in figure \ref{fig:acc}.\\
 
 \begin{figure}
     \centering
@@ -249,16 +249,19 @@ The \textbf{SVM} model achieved an accuracy of \textbf{0.728}, while \textbf{KNN
 
 \section{Discussion}
 The results demonstrate the potential of using MFCCs, PCA and KNN algorithm for intent recognition task.
-The preprocessing steps and hyperparameter tuning were crucial for achieving good performance.
-The results were compared with SVM model, which can be used as benchmark for future work.
-In fact, inference for SVM model takes $O(d)$, where $d$ is the number of features, since you only need to determine which side of a hyperplane a given point lies on.
-While KNN inference requires computation of distances between new objects and already classified objects.
-Therefore for fast classification purposes SVM could help achieve a more efficient performance with sligtly worse accuracy results.
-
-
-The results also indicate that there is room for improvement and further research could be done to improve the performance of the model.
-For example, other feature extraction techniques or classifiers could be explored, and the model could be trained on a larger dataset to increase its generalizability.
-Additionally, incorporating techniques like data augmentation and ensembling could help to further improve the performance.
+The preprocessing steps such as features selection and normalization were crucial for achieving good performance.
+MFCCs in particular show great speech recognition performances in a clear environment, while they have poor robustness to noise signals.
+In order to enhance robustness, mean and variance normalization has been performed on each MFCC feature belonging to the training set.
+In fact normalization procedures enable to lessen the influence of variability  and noise in each recording.\\
+For what concerns MFCCs extraction hyperparameters tuning, results show that higher features quality does not always lead to higher accuracy. 
+Therefore, a simpler extraction using 12 filters has been preferred, in order to not overfit training data.\\
+After the preprocessing stage, PCA has been fundamental to reduce feature vector's size while retaining important information. Thus allowing shorter algorithms training time and preventing overfitting.\\
+In model selection the best KNN results were compared with SVM model outcomes, with the latter showing potential as benchmark for future works.
+In fact, inference for SVM model takes $O(d)$, where $d$ is the number of features, since determination of which side of a hyperplane a given point lies on is only needed.
+On the other hand, KNN inference requires computation of distances between new objects and already classified objects.
+Therefore, for fast classification purposes SVM could help achieve a more efficient performance with slightly worse accuracy results.\\
+Outcomes also indicate that there is a room for improvement and further research could be done to improve the performance of the model.
+For example, other feature extraction techniques could be explored, such as DWT to improve noise robustness, or more complex normalization methods could be employed to reduce the influence of low energy components in MFCCs.\\
 
 
 \nocite{*}
