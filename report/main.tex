@@ -50,13 +50,21 @@ Additionally, audio data are not easy to work with as they require specialized p
 
 The dataset given has been divided in two parts:
 \begin{itemize}
-    \item \textbf{Development} set, containing 9954 instances, 7 predictive attributes and the target, \textit{intent}.
-    \item \textbf{Evaluation} set, containing 1455 instances with the same structure besides the target variable.
+    \item Development set, containing 9954 instances, 7 predictive attributes and the target, \textit{intent}.
+    \item Evaluation set, containing 1455 instances with the same structure besides the target variable.
 \end{itemize}
 The split has been made in order to train a model using the first one, and evaluate its accuracy using the second one.
 
 Each row of the dataset contains information about the person speaking, from his/her \textit{speakerId}, to his/her \textit{gender}, \textit{ageRange}, \textit{self-reported fluency level}, \textit{first Language spoken} and the \textit{current language used for work/school}, and the \textit{path} to the wav file.
-The \textit{intent} refers to the purpose of the speaker and it is a categorical response variable assuming 7 possible values, some of which are "activate music", "increase heat" and "deactivate lights".
+The \textit{intent} refers to the purpose of the speaker and it is a categorical response variable assuming 7 possible values, some of which are "activate music", "increase heat", and "deactivate lights".
+Its distribution can be seen in figure \ref{fig:intent}, and it can be observed an imbalance between the counts.
+
+\begin{figure}
+    \centering
+    \includesvg[width=0.45\textwidth]{intent}
+    \caption{distribution of the response variable}
+    \label{fig:intent}
+\end{figure}
 
 From a brief exploratory data analysis, it is immediate to observe that there are no missing or duplicated values. 
 Then it can be noted that 10834 out of the total 11309 speakers are native english (from United States).
@@ -92,6 +100,15 @@ Next, the audio files were cut and padded.
 This has been done to ensure that the features extracted are comparable and of the same length, obtaining as a result consistent data for scikit-learn.
 Going into detail, the 95th percentile $p$ of the lengths has been taken, indicating the length such that 95\% of data are shorter than $p$.
 We got $p = 2.9$ seconds.
+In figure \ref{fig:perc} is shown the distribution of the recordings' length with the 95th percentile.
+
+\begin{figure}
+    \centering
+    \includesvg[width=0.45\textwidth]{perc}
+    \caption{histogram of recordings' length}
+    \label{fig:perc}
+\end{figure}
+
 The cut and pad method refers, respectively, to the discard of the recording part over $p$ and to the addition of trailing zeros (which represent silence) to recording with length less than $p$.
 
 The next step was to compute the Mel-frequency cepstral coefficients (MFCCs).
@@ -100,6 +117,15 @@ However, they are not very robust at the presence of noise.
 Therefore, it is common to normalise their values to lessen their influence, and so we did.
 The term ceptral refers to the cepstrum, which is a tool to investigate periodic structures in frequency spectra.
 Instead, Mel-frequency indicates that the frequency studied are equally spaced on the mel scale, which is a non-linear scale that is based on the way the human ear perceives different frequencies of sound.
+
+\begin{figure}
+    \centering
+    \includesvg[width=0.45\textwidth]{mfcc}
+    \caption{wave plot and the relative scaled MFCC}
+    \label{fig:mfcc}
+\end{figure}
+
+In figure \ref{fig:mfcc}, in the upper plot can be seen clearly the effect of the trimming and padding, while the bottom figure show its scaled MFCC. 
 
 At the end, Principal Component Analysis (PCA) was used to reduce the number of features.
 In fact, the MFCC built from each recording is represented by a $125 \times 12$ matrix, prducing the overwhelming 1500 features plus the 5 from \textit{gender} and \textit{ageRange}.
@@ -133,7 +159,7 @@ The possible parameters' values can be seen in table \ref{tab:grid}.
 \begin{table}
     \centering
     \caption{parameters grid}
-    \begin{tabular}{lllll}
+    \begin{tabular}{ccc}
         \toprule
         \toprule
         Models & Parameters & Values\\
@@ -157,34 +183,13 @@ Therefore, $k$ training and testing processes have to be made which could be com
 
 \section{Results}
 
-\begin{table}
-    \centering
-    \caption{results on public leaderboard}
-    \begin{tabular}{lllll}
-        \toprule
-        \toprule
-        Models & Accuracy & Best parameters \\
-        \midrule
-        \addlinespace[5pt]
-        \multirow{2}{*}[-3pt]{SVM} & \multirow{2}{*}[-3pt]{0.728}   & kernel: 'rbf'\\
-                                                                    \cmidrule{3-3}
-                                                                    && C: 10\\
-        \midrule
-        \multirow{2}{*}[-3pt]{KNN} & \multirow{2}{*}[-3pt]{0.762}   & n neighbors: 6\\
-                                                                    \cmidrule{3-3}
-                                                                    && weights: 'distance'\\
-        \bottomrule
-    \end{tabular}
-    \label{tab:results}
-\end{table}
-
 In this section we will show the results obtained using the procedures described in previous sections.
 After model selection, KNN and SVM algorithms have been tested with the selected hyperparameters showed in Table \ref{tab:grid}.
 For testing purpose k-fold cross validation on the development set has been used, leading to the average accuracies in Table \ref{tab:results_dev}.
 \begin{table}
     \centering
-    \caption{Results of hyperparameters tuning using k-fold cross validation}
-    \begin{tabular}{lllll}
+    \caption{Results on development set}
+    \begin{tabular}{ccc}
         \toprule
         \toprule
         Models & Accuracy & Best parameters \\
@@ -204,22 +209,20 @@ For testing purpose k-fold cross validation on the development set has been used
 
 The results show little difference in accuracy, with KNN algorithm performing slightly better.\\
 Subsequently, we have validated our KNN algorithm with the best hyperparameters configuration found, changing features quality.
-We have tested 6 different values for the MFCCs number hyperparameter: 8, 10, 12, 14, 16 and the default value 20. The optimal number found has been 10, with accuracy displayed in Table \ref{tab:results_n_mfcc}.\\
+We have tested 5 different values for the MFCCs number hyperparameter: 8, 10, 12, 16 and the default value 20. The optimal number found has been 10, with accuracy displayed in Table \ref{tab:results_n_mfcc}.\\
 \begin{table}
     \centering
     \caption{Results of MFCCs number tuning on KNN}
-    \begin{tabular}{lllll}
+    \begin{tabular}{cc}
         \toprule
         \toprule
         MFCCs number & Accuracy \\
         \midrule
-        \addlinespace[5pt]
-        \multirow{2}{*}[-3pt]{8} & \multirow{2}{*}[-3pt]{0.66003}\\
-        \multirow{2}{*}[-3pt]{10} & \multirow{2}{*}[-3pt]{0.66023}\\
-        \multirow{2}{*}[-3pt]{12} & \multirow{2}{*}[-3pt]{0.65516}\\
-        \multirow{2}{*}[-3pt]{14} & \multirow{2}{*}[-3pt]{0.65049}\\
-        \multirow{2}{*}[-3pt]{16} & \multirow{2}{*}[-3pt]{0.63171}\\
-        \multirow{2}{*}[-3pt]{20} & \multirow{2}{*}[-3pt]{0.60502}\\
+        8 & 0.66003\\
+        10 & 0.66023\\
+        12 & 0.65516\\
+        16 & 0.63171\\
+        20 & 0.60502\\
         \bottomrule
     \end{tabular}
     \label{tab:results_n_mfcc}
@@ -227,6 +230,26 @@ We have tested 6 different values for the MFCCs number hyperparameter: 8, 10, 12
 After model selection and hyperparameters tuning processes, the two best models have been evaluated on the public evaluation test set.\\
 The \textbf{SVM} model achieved an accuracy of \textbf{0.728}, while \textbf{KNN} model achieved an accuracy of \textbf{0.762}.
 
+\begin{table}
+    \centering
+    \caption{results on public leaderboard}
+    \begin{tabular}{ccc}
+        \toprule
+        \toprule
+        Models & Accuracy & Best parameters \\
+        \midrule
+        \addlinespace[5pt]
+        \multirow{2}{*}[-3pt]{SVM} & \multirow{2}{*}[-3pt]{0.728}   & kernel: 'rbf'\\
+                                                                    \cmidrule{3-3}
+                                                                    && C: 10\\
+        \midrule
+        \multirow{2}{*}[-3pt]{KNN} & \multirow{2}{*}[-3pt]{0.762}   & n neighbors: 6\\
+                                                                    \cmidrule{3-3}
+                                                                    && weights: 'distance'\\
+        \bottomrule
+    \end{tabular}
+    \label{tab:results_eval}
+\end{table}
 
 \section{Discussion}
 The results demonstrate the potential of using MFCCs, PCA and KNN algorithm for intent recognition task.
