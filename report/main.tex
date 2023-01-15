@@ -126,13 +126,16 @@ Instead, Mel-frequency indicates that the frequency studied are equally spaced o
 \end{figure}
 
 In figure \ref{fig:mfcc}, in the upper plot can be seen clearly the effect of the trimming and padding, while the bottom figure show its scaled MFCC. 
+The function \texttt{librosa.feature.mfcc} has been used to get the coefficients.
+Its default number of coeffiecients returned is \texttt{n-mfcc = 20}.
+Anyway, it could be considered an hyperparameter, and the best value found is 10.
 
 At the end, Principal Component Analysis (PCA) was used to reduce the number of features.
-In fact, the MFCC built from each recording is represented by a $125 \times 12$ matrix, prducing the overwhelming 1500 features plus the 5 from \textit{gender} and \textit{ageRange}.
+In fact, the MFCC built from each recording is represented by a $125 \times 10$ matrix, prducing the overwhelming 1250 features plus the 5 from \textit{gender} and \textit{ageRange}.
 PCA is a technique used for feature extraction and dimensionality reduction, which can improve the computational efficiency of the model.
 It works by transforming the original features into a new set of features, called principal components, which are linear combinations of the original ones.
 These principal components are chosen such that they capture the most important information in the original features, explaining the most variance possible.
-In our case, narrow the features down to 272 still explaining the 90\% of the variance in the development set.
+In our case, narrow the features down to 218 still explaining the 90\% of the variance in the development set.
 
 \subsection{Model selection}
 The following two models have been deepened because researches have proved their efficiency for speech recognition systems:
@@ -151,7 +154,7 @@ The following two models have been deepened because researches have proved their
 \end{itemize}
 
 \subsection{Hyperparameters tuning}
-In this section is reported the tuning of the previous models' hyperparameters using a grid search 5-fold cross-validation method.
+In this section is reported the process of tuning the previous models' hyperparameters using a grid search 5-fold cross-validation method.
 It involves training the model multiple times with different combinations of hyperparameters, and evaluating the performance of each combination using cross-validation.
 In our case, the performance score of interest is the accuracy.
 The possible parameters' values can be seen in table \ref{tab:grid}.
@@ -162,7 +165,7 @@ The possible parameters' values can be seen in table \ref{tab:grid}.
     \begin{tabular}{ccc}
         \toprule
         \toprule
-        Models & Parameters & Values\\
+        Model & Parameter & Values\\
         \midrule
         \addlinespace[5pt]
         \multirow{2}{*}[-3pt]{SVM}  & kernel & ['linear', 'poly', 'rbf']\\
@@ -179,7 +182,9 @@ The possible parameters' values can be seen in table \ref{tab:grid}.
 
 In general $k$-fold cross-validation is a method of evaluating the performance by dividing the development data into training and validation sets, with size respectively $(k-1)/k$ and $1/k$.
 This process is repeated $k$ times with different partitions of the data, and the average performance is used to evaluate the model.
-Therefore, $k$ training and testing processes have to be made which could be computationally expensive for slow models.
+Therefore, $k$ training and testing processes have to be made which could be computationally expensive for slower models like SVM.
+
+In addition, there is the hyperparameter \texttt{n-mfcc} from the feature extraction section, which will be tested on the best model found.
 
 \section{Results}
 
@@ -192,7 +197,7 @@ For testing purpose k-fold cross validation on the development set has been used
     \begin{tabular}{ccc}
         \toprule
         \toprule
-        Models & Accuracy & Best parameters \\
+        Model & Accuracy & Best parameters \\
         \midrule
         \addlinespace[5pt]
         \multirow{2}{*}[-3pt]{SVM} & \multirow{2}{*}[-3pt]{0.639}   & kernel: 'rbf'\\
@@ -216,7 +221,7 @@ We have tested 5 different values for the MFCCs number hyperparameter: 8, 10, 12
     \begin{tabular}{cc}
         \toprule
         \toprule
-        MFCCs number & Accuracy \\
+        n-mfcc & Accuracy \\
         \midrule
         8 & 0.66003\\
         10 & 0.66023\\
@@ -236,7 +241,7 @@ The \textbf{SVM} model achieved an accuracy of \textbf{0.728}, while \textbf{KNN
     \begin{tabular}{ccc}
         \toprule
         \toprule
-        Models & Accuracy & Best parameters \\
+        Model & Accuracy & Best parameters \\
         \midrule
         \addlinespace[5pt]
         \multirow{2}{*}[-3pt]{SVM} & \multirow{2}{*}[-3pt]{0.728}   & kernel: 'rbf'\\
