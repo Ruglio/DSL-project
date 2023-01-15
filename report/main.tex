@@ -214,24 +214,15 @@ For testing purpose k-fold cross validation on the development set has been used
 
 The results show little difference in accuracy, with KNN algorithm performing slightly better.\\
 Subsequently, we have validated our KNN algorithm with the best hyperparameters configuration found, changing features quality.
-We have tested 5 different values for the MFCCs number hyperparameter: 8, 10, 12, 16 and the default value 20. The optimal number found has been 10, with accuracy displayed in Table \ref{tab:results_n_mfcc}.\\
-\begin{table}
+We have tested 5 different values for the MFCCs number hyperparameter: 8, 10, 12, 16 and the default value 20. The optimal number found has been 10, with accuracy displayed in figure \ref{fig:acc}.\\
+
+\begin{figure}
     \centering
-    \caption{Results of MFCCs number tuning on KNN}
-    \begin{tabular}{cc}
-        \toprule
-        \toprule
-        n-mfcc & Accuracy \\
-        \midrule
-        8 & 0.66003\\
-        10 & 0.66023\\
-        12 & 0.65516\\
-        16 & 0.63171\\
-        20 & 0.60502\\
-        \bottomrule
-    \end{tabular}
-    \label{tab:results_n_mfcc}
-\end{table}
+    \includesvg[width=0.45\textwidth]{acc}
+    \caption{accuracy varyng n-mfcc}
+    \label{fig:acc}
+\end{figure}
+
 After model selection and hyperparameters tuning processes, the two best models have been evaluated on the public evaluation test set.\\
 The \textbf{SVM} model achieved an accuracy of \textbf{0.728}, while \textbf{KNN} model achieved an accuracy of \textbf{0.762}.
 
