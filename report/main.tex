@@ -26,12 +26,12 @@
 
 \begin{document}
 
-\title{Report title}
+\title{Intent recognition problem analysis}
 
 \author{\IEEEauthorblockN{Giulia Monchietto, Andrea Ruglioni}
 \IEEEauthorblockA{\textit{Politecnico di Torino} \\
-Student id: s123456, s123456\\
-email@studenti.polito.it, email@studenti.polito.it}
+Student ids: s315312, s309568\\
+giulia.monchietto@studenti.polito.it, andrea.ruglioni@studenti.polito.it}
 }
 
 \maketitle
@@ -111,8 +111,8 @@ In figure \ref{fig:perc} is shown the distribution of the recordings' length wit
 
 The cut and pad method refers, respectively, to the discard of the recording part over $p$ and to the addition of trailing zeros (which represent silence) to recording with length less than $p$.
 
-The next step was to compute the Mel-frequency cepstral coefficients (MFCCs).
-MFCCs are the “de facto” standard for speech recognition because of their high accuracy and low complexity.
+The next step was to compute the Mel-frequency cepstral coefficients (MFCCs) \cite{samad:2015}.
+MFCCs are the “de facto” standard for speech recognition because they provide a good representation of the spectral properties, still having low complexity.
 However, they are not very robust at the presence of noise.
 Therefore, it is common to normalise their values to lessen their influence, and so we did.
 The term ceptral refers to the cepstrum, which is a tool to investigate periodic structures in frequency spectra.
@@ -125,32 +125,31 @@ Instead, Mel-frequency indicates that the frequency studied are equally spaced o
     \label{fig:mfcc}
 \end{figure}
 
-In figure \ref{fig:mfcc}, in the upper plot can be seen clearly the effect of the trimming and padding, while the bottom figure show its scaled MFCC. 
+In figure \ref{fig:mfcc}, in the upper plot can be seen clearly the effect of the trimming and padding, while the bottom figure shows its scaled MFCC. 
 The function \texttt{librosa.feature.mfcc} has been used to get the coefficients.
-Its default number of coeffiecients returned is \texttt{n-mfcc = 20}.
-Anyway, it could be considered an hyperparameter, and the best value found is 10.
+Its default number of coefficients returned is \texttt{n-mfcc = 20}.
+Anyway, it could be considered an hyperparameter, and the best value found is 8.
 
 At the end, Principal Component Analysis (PCA) was used to reduce the number of features.
-In fact, the MFCC built from each recording is represented by a $125 \times 10$ matrix, prducing the overwhelming 1250 features plus the 5 from \textit{gender} and \textit{ageRange}.
+In fact, the MFCC built from each recording is represented by a $125 \times 8$ matrix, producing the overwhelming number of 1000 features plus the 5 from \textit{gender} and \textit{ageRange}.
 PCA is a technique used for feature extraction and dimensionality reduction, which can improve the computational efficiency of the model.
 It works by transforming the original features into a new set of features, called principal components, which are linear combinations of the original ones.
 These principal components are chosen such that they capture the most important information in the original features, explaining the most variance possible.
-In our case, narrow the features down to 218 still explaining the 90\% of the variance in the development set.
+In our case, it narrows the features down to 162 still explaining the 90\% of the variance in the development set.
 
 \subsection{Model selection}
-The following two models have been deepened because researches have proved their efficiency for speech recognition systems:
+The following two models have been deepened because researches have proved their efficiency for speech recognition systems \cite{weston:1999}:
 \begin{itemize}
-    \item The K-nearest neighbors (KNN) algorithm is a simple, yet effective, classifier that can be useful for recognizing patterns in data.
+    \item The K-Nearest Neighbors (KNN) algorithm is a simple, yet effective, classifier that can be useful for recognizing patterns in data.
     It is a non-parametric method, which means it does not make any assumptions about the underlying data distribution.
     This makes it well-suited for a problem like intent recognition where the data may be very complex.
     Additionally, KNN algorithm is computationally efficient and easy to implement.
 
-    \item The support vector machine (SVM) is a very versatile model whose basic idea is to find the best linear decision surface, that separates different classes.
-    Their importance is due to the kernel trick, which vartually transforms the data in a higher dimensional space, where it is linearly separable, obtaining a non-linear decision boundary in the original feature space.
+    \item The Support Vector Machine (SVM) is a very versatile model whose basic idea is to find the best linear decision surface, that separates different classes.
+    Their importance is due to the kernel trick, which virtually transforms the data in a higher dimensional space, where it is linearly separable, obtaining a non-linear decision boundary in the original feature space.
     For speech recognition models, SVMs are often used with a radial basis function (RBF) kernel.
-    Moreover, with have trained SVM with a one vs one approach consisting in fitting one classifier per class pair.
-    At prediction time, the class which receives the most votes is selected.
-    Thus
+    Moreover, the SVM has been trained with a one vs one approach consisting in fitting one classifier per class pair.
+    At prediction time, the class receiving the most votes is selected.
 \end{itemize}
 
 \subsection{Hyperparameters tuning}
@@ -180,16 +179,15 @@ The possible parameters' values can be seen in table \ref{tab:grid}.
     \label{tab:grid}
 \end{table}
 
-In general $k$-fold cross-validation is a method of evaluating the performance by dividing the development data into training and validation sets, with size respectively $(k-1)/k$ and $1/k$.
+In general, $k$-fold cross-validation is a method of evaluating the performance by dividing the development data into training and validation sets, with size respectively $(k-1)/k$ and $1/k$.
 This process is repeated $k$ times with different partitions of the data, and the average performance is used to evaluate the model.
-Therefore, $k$ training and testing processes have to be made which could be computationally expensive for slower models like SVM.
+Therefore, $k$ training and testing processes have to be performed which could be computationally expensive for slower models like SVM.
 
 In addition, there is the hyperparameter \texttt{n-mfcc} from the feature extraction section, which will be tested on the best model found.
 
 \section{Results}
 
-In this section we will show the results obtained using the procedures described in previous sections.
-After model selection, KNN and SVM algorithms have been tested with the selected hyperparameters showed in Table \ref{tab:grid}.
+In this section we will show the results obtained using the procedures described in the previous sections.
 For testing purpose k-fold cross validation on the development set has been used, leading to the average accuracies in Table \ref{tab:results_dev}.
 \begin{table}
     \centering
@@ -212,9 +210,10 @@ For testing purpose k-fold cross validation on the development set has been used
     \label{tab:results_dev}
 \end{table}
 
-The results show little difference in accuracy, with KNN algorithm performing slightly better.\\
-Subsequently, we have validated our KNN and SVM algorithms with the best hyperparameters configurations found, changing features quality.
-We have tested 5 different values for the MFCCs number hyperparameter: 8, 10, 12, 16, 18 and the default value 20. The optimal number found has been 10 in both cases, with accuracy displayed in figure \ref{fig:acc}.\\
+The results show little difference in accuracy, with KNN algorithm performing slightly better.
+
+Subsequently, we have validated our KNN and SVM algorithms with the best hyperparameters configurations found, changing MFCCs filters number.
+We have tested 7 different values: 4, 6, 8, 10, 12, 14, and 16. The optimal number found has been 8 in both cases, with accuracies displayed in figure \ref{fig:acc}.
 
 \begin{figure}
     \centering
@@ -223,7 +222,7 @@ We have tested 5 different values for the MFCCs number hyperparameter: 8, 10, 12
     \label{fig:acc}
 \end{figure}
 
-After model selection and hyperparameters tuning processes, the two best models have been evaluated on the public evaluation test set.\\
+After model selection and hyperparameters tuning processes, the two best models have been evaluated on the public evaluation test set.
 The \textbf{SVM} model achieved an accuracy of \textbf{0.728}, while \textbf{KNN} model achieved an accuracy of \textbf{0.762}.
 
 \begin{table}
@@ -251,18 +250,24 @@ The \textbf{SVM} model achieved an accuracy of \textbf{0.728}, while \textbf{KNN
 The results prove the potential of using MFCCs, PCA and KNN algorithm for intent recognition task.
 The preprocessing steps such as features selection and normalization were crucial for achieving good performance.
 MFCCs in particular show great speech recognition performances in a clear environment, while they have poor robustness to noise signals.
-In order to enhance robustness, mean and variance normalization has been performed on each MFCC feature belonging to the training set.
-In fact normalization procedures enable to lessen the influence of variability and noise in each recording.\\
-For what concerns MFCCs extraction hyperparameters tuning, results show that higher features quality does not always lead to higher accuracy. 
-Therefore, a simpler extraction using 8 filters has been preferred, in order to not overfit training data.\\
-After the preprocessing stage, PCA has been fundamental to reduce feature vector's size while retaining important information. Thus allowing shorter algorithms training time and preventing overfitting.\\
+In order to enhance robustness, mean and variance normalization has been performed on each MFCC feature.
+In fact normalization procedures enable to lessen the influence of variability and noise in each recording.
+
+For what concerns MFCCs extraction hyperparameters tuning, results show that higher numbers of filters, implying better features quality, does not always lead to higher accuracy. 
+Therefore, a simpler extraction using 8 filters has been preferred, in order to not overfit training data.
+
+After the preprocessing stage, PCA has been fundamental to reduce feature vector's size while retaining important information.
+Thus allowing shorter algorithms training time, preventing overfitting and avoiding the curse of dimensionality.
+
 In model selection the best KNN results were compared with SVM model outcomes, with the latter showing potential as benchmark for future works.
 In fact, inference for SVM model takes $O(d)$, where $d$ is the number of features, since determination of which side of a hyperplane a given point lies on is only needed.
 On the other hand, KNN inference requires computation of distances between new objects and already classified objects.
-Therefore, for fast classification purposes SVM could help achieve a more efficient performance with slightly worse accuracy results.\\
+Therefore, for fast classification purposes SVM could help achieve a more efficient performance with slightly worse accuracy results.
+
 In conclusion, a great accuracy gap has been obtained between evaluation set and validation on development set testing.
-The behaviour could be due to model training before validation having being performed on 4/5 of the development set. 
-While before testing on evaluation set, the model has been trained on the entire training set, leading to higher accuracy.\\
+The behaviour could be due to the fact that model training during hyperparameters tuning has been performed on 4/5 of the development set. 
+While before testing on evaluation set, the model has been trained on the entire training set, leading to higher accuracy.
+
 Outcomes also indicate that there is a room for improvement and further research could be done to improve the performance of the model.
 For example, other feature extraction techniques could be explored, such as DWT to improve noise robustness, or more complex normalization methods could be employed to reduce the influence of low energy components in MFCCs.\\
 
