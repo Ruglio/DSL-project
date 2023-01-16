@@ -253,8 +253,8 @@ MFCCs in particular show great speech recognition performances in a clear enviro
 In order to enhance robustness, mean and variance normalization has been performed on each MFCC feature.
 In fact normalization procedures enable to lessen the influence of variability and noise in each recording.
 
-For what concerns MFCCs extraction hyperparameters tuning, results show that higher numbers of filters, implying better features quality, does not always lead to higher accuracy. 
-Therefore, a simpler extraction using 8 filters has been preferred, in order to not overfit training data.
+For what concerns MFCCs extraction hyperparameters tuning, results show that higher numbers of coefficients, implying greater features quality, does not always lead to higher accuracy. 
+Therefore, a simpler extraction using 8 coefficients has been preferred, in order to not overfit training data.
 
 After the preprocessing stage, PCA has been fundamental to reduce feature vector's size while retaining important information.
 Thus allowing shorter algorithms training time, preventing overfitting and avoiding the curse of dimensionality.
