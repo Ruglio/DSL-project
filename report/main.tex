@@ -248,18 +248,21 @@ The \textbf{SVM} model achieved an accuracy of \textbf{0.728}, while \textbf{KNN
 \end{table}
 
 \section{Discussion}
-The results demonstrate the potential of using MFCCs, PCA and KNN algorithm for intent recognition task.
+The results prove the potential of using MFCCs, PCA and KNN algorithm for intent recognition task.
 The preprocessing steps such as features selection and normalization were crucial for achieving good performance.
 MFCCs in particular show great speech recognition performances in a clear environment, while they have poor robustness to noise signals.
 In order to enhance robustness, mean and variance normalization has been performed on each MFCC feature belonging to the training set.
-In fact normalization procedures enable to lessen the influence of variability  and noise in each recording.\\
+In fact normalization procedures enable to lessen the influence of variability and noise in each recording.\\
 For what concerns MFCCs extraction hyperparameters tuning, results show that higher features quality does not always lead to higher accuracy. 
-Therefore, a simpler extraction using 12 filters has been preferred, in order to not overfit training data.\\
+Therefore, a simpler extraction using 8 filters has been preferred, in order to not overfit training data.\\
 After the preprocessing stage, PCA has been fundamental to reduce feature vector's size while retaining important information. Thus allowing shorter algorithms training time and preventing overfitting.\\
 In model selection the best KNN results were compared with SVM model outcomes, with the latter showing potential as benchmark for future works.
 In fact, inference for SVM model takes $O(d)$, where $d$ is the number of features, since determination of which side of a hyperplane a given point lies on is only needed.
 On the other hand, KNN inference requires computation of distances between new objects and already classified objects.
 Therefore, for fast classification purposes SVM could help achieve a more efficient performance with slightly worse accuracy results.\\
+In conclusion, a great accuracy gap has been obtained between evaluation set and validation on development set testing.
+The behaviour could be due to model training before validation having being performed on 4/5 of the development set. 
+While before testing on evaluation set, the model has been trained on the entire training set, leading to higher accuracy.\\
 Outcomes also indicate that there is a room for improvement and further research could be done to improve the performance of the model.
 For example, other feature extraction techniques could be explored, such as DWT to improve noise robustness, or more complex normalization methods could be employed to reduce the influence of low energy components in MFCCs.\\
 
